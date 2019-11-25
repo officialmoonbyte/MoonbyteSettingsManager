@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonbyteSettingsManager", "MoonbyteSettingsManager\MoonbyteSettingsManager.csproj", "{5154572B-A6BC-4980-9B79-C12271AF878F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSM Testing Application", "MSM Testing Application\MSM Testing Application.csproj", "{F864B12A-6547-4F3E-B90D-42AFAE58A51B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5154572B-A6BC-4980-9B79-C12271AF878F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5154572B-A6BC-4980-9B79-C12271AF878F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5154572B-A6BC-4980-9B79-C12271AF878F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5154572B-A6BC-4980-9B79-C12271AF878F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F864B12A-6547-4F3E-B90D-42AFAE58A51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F864B12A-6547-4F3E-B90D-42AFAE58A51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F864B12A-6547-4F3E-B90D-42AFAE58A51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F864B12A-6547-4F3E-B90D-42AFAE58A51B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C2B5FA3A-0CEA-443C-A7AF-6FCC8F091B27}
+	EndGlobalSection
+EndGlobal
