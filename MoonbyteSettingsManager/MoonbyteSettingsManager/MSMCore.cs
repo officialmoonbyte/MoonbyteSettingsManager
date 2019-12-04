@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -8,8 +7,6 @@ namespace MoonbyteSettingsManager
     public class MSMCore
     {
         #region Vars
-
-        private const string Sep = " : ";
 
         private bool showLog;
         private List<string> settings = null;
@@ -85,22 +82,7 @@ namespace MoonbyteSettingsManager
         public void EditSetting(string SettingTitle, string SettingValue)
         {
             if (CheckValues())
-            {
-                string newString = SettingTitle + Sep + SettingValue;
-                int i = 0; bool found = false; foreach (string s in settings)
-                {
-                    string[] rawSetting = s.Split(new string[] { Sep }, StringSplitOptions.RemoveEmptyEntries);
-                    if (rawSetting[0] == SettingTitle)
-                    {
-                        settings[i] = newString;
-                        found = true;
-                        break;
-                    }
-                    i++;
-                }
-
-                if (found == false) { settings.Add(newString); }
-            }
+            { BaseCommands.BaseEditSetting(SettingTitle, SettingValue, settings); }
         }
 
         #endregion EditSetting
@@ -110,16 +92,7 @@ namespace MoonbyteSettingsManager
         public string ReadSetting(string SettingTitle)
         {
             if (CheckValues())
-            {
-                foreach (string s in settings)
-                {
-                    string[] rawSetting = s.Split(new string[] { Sep }, StringSplitOptions.RemoveEmptyEntries);
-                    if (rawSetting[0] == SettingTitle)
-                    {
-                        return rawSetting[1];
-                    }
-                }
-            }
+            { return BaseCommands.BaseReadSetting(SettingTitle, settings); }
 
             return null;
         }
@@ -131,16 +104,7 @@ namespace MoonbyteSettingsManager
         public bool CheckSetting(string SettingTitle)
         {
             if (CheckValues())
-            {
-                foreach (string s in settings)
-                {
-                    string[] rawSetting = s.Split(new string[] { Sep }, StringSplitOptions.RemoveEmptyEntries);
-                    if (rawSetting[0] == SettingTitle)
-                    {
-                        return true;
-                    }
-                }
-            }
+            { return BaseCommands.BaseCheckSetting(SettingTitle, settings); }
 
             return false;
         }
@@ -152,20 +116,7 @@ namespace MoonbyteSettingsManager
         public void DeleteSetting(string SettingTitle)
         {
             if (CheckValues())
-            {
-                string oldString = SettingTitle + Sep;
-                int i = 0; bool found = false; foreach (string s in settings)
-                {
-                    string[] rawSetting = s.Split(new string[] { Sep }, StringSplitOptions.RemoveEmptyEntries);
-                    if (rawSetting[0] == SettingTitle)
-                    {
-                        oldString += rawSetting[1];
-                        settings.Remove(oldString);
-                        break;
-                    }
-                    i++;
-                }
-            }
+            { BaseCommands.BaseDeleteSetting(SettingTitle, settings); }
         }
 
         #endregion DeleteSetting
