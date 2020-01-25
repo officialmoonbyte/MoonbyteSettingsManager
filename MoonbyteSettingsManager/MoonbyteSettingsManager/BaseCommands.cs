@@ -26,7 +26,7 @@ namespace MoonbyteSettingsManager
         public static void BaseEditSetting(string SettingTitle, string SettingValue, List<string> Settings)
         {
             string newString = SettingTitle + Sep + SettingValue;
-            Console.WriteLine(string.Join(" ", Settings));
+
             int i = 0; bool found = false; foreach (string s in Settings)
             {
                 string[] rawSetting = s.Split(new string[] { Sep }, StringSplitOptions.RemoveEmptyEntries);
