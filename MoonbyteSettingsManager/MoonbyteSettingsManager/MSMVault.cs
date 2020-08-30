@@ -22,6 +22,28 @@ namespace MoonbyteSettingsManager
 
         #endregion Vars
 
+        #region Events
+
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeDecryptMessage;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeEncryptMessage;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeLoadSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeSaveSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeDeleteSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeCheckSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeReadSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeEditSetting;
+
+        public event EventHandler<EventArgs> OnAfterDecryptMessage;
+        public event EventHandler<EventArgs> OnAfterEncryptMessage;
+        public event EventHandler<EventArgs> OnAfterLoadSetting;
+        public event EventHandler<EventArgs> OnAfterSaveSetting;
+        public event EventHandler<EventArgs> OnAfterDeleteSetting;
+        public event EventHandler<EventArgs> OnAfterCheckSetting;
+        public event EventHandler<EventArgs> OnAfterReadSetting;
+        public event EventHandler<EventArgs> OnAfterEditSetting;
+
+        #endregion Events
+
         #region Properties
 
         public bool ShowLog
@@ -51,14 +73,22 @@ namespace MoonbyteSettingsManager
 
         public void EditSetting(string SettingTitle, string SettingValue)
         {
-            if (CheckValues())
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeEditSetting?.Invoke(this, OnBeforeRequest);
+
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
             {
-                List<string> Settings = LoadSettings();
+                if (CheckValues())
+                {
+                    List<string> Settings = LoadSettings();
 
-                BaseCommands.BaseEditSetting(SettingTitle, SettingValue, Settings);
+                    BaseCommands.BaseEditSetting(SettingTitle, SettingValue, Settings);
 
-                SaveSettings(Settings);
+                    SaveSettings(Settings);
+                }
             }
+
+            OnAfterEditSetting?.Invoke(this, new EventArgs());
         }
 
         #endregion EditSetting
@@ -67,12 +97,21 @@ namespace MoonbyteSettingsManager
 
         public string ReadSetting(string SettingTitle)
         {
-            if (CheckValues())
-            {
-                List<string> Settings = LoadSettings();
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeReadSetting?.Invoke(this, OnBeforeRequest);
 
-                return BaseCommands.BaseReadSetting(SettingTitle, Settings, true);
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues())
+                {
+                    List<string> Settings = LoadSettings();
+
+                    OnAfterReadSetting?.Invoke(this, new EventArgs());
+                    return BaseCommands.BaseReadSetting(SettingTitle, Settings, true);
+                }
             }
+
+            OnAfterReadSetting?.Invoke(this, new EventArgs());
             return null;
         }
 
@@ -82,12 +121,21 @@ namespace MoonbyteSettingsManager
 
         public bool CheckSetting(string SettingTitle)
         {
-            if (CheckValues())
-            {
-                List<string> Settings = LoadSettings();
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeCheckSetting?.Invoke(this, OnBeforeRequest);
 
-                return BaseCommands.BaseCheckSetting(SettingTitle, Settings, true);
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues())
+                {
+                    List<string> Settings = LoadSettings();
+
+                    OnAfterCheckSetting?.Invoke(this, new EventArgs());
+                    return BaseCommands.BaseCheckSetting(SettingTitle, Settings, true);
+                }
             }
+
+            OnAfterCheckSetting?.Invoke(this, new EventArgs());
             return false;
         }
 
@@ -97,14 +145,22 @@ namespace MoonbyteSettingsManager
 
         public void DeleteSetting(string SettingTitle)
         {
-            if (CheckValues())
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeDeleteSetting?.Invoke(this, OnBeforeRequest);
+
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
             {
-                List<string> Settings = LoadSettings();
+                if (CheckValues())
+                {
+                    List<string> Settings = LoadSettings();
 
-                BaseCommands.BaseDeleteSetting(SettingTitle, Settings);
+                    BaseCommands.BaseDeleteSetting(SettingTitle, Settings);
 
-                SaveSettings(Settings);
+                    SaveSettings(Settings);
+                }
             }
+
+            OnAfterDeleteSetting?.Invoke(this, new EventArgs());
         }
 
         #endregion DeleteSetting
@@ -151,16 +207,24 @@ namespace MoonbyteSettingsManager
 
         private void SaveSettings(List<string> Settings)
         {
-            string FullSettings = string.Join(Environment.NewLine, Settings);
-            string saveValue = Encrypt(FullSettings, GetClientMacAddress());
-            File.WriteAllText(settingsFullDirectory, saveValue);
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeSaveSetting?.Invoke(this, OnBeforeRequest);
 
-            Settings = null;
-            FullSettings = null;
-            saveValue = null;
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                string FullSettings = string.Join(Environment.NewLine, Settings);
+                string saveValue = Encrypt(FullSettings, GetClientMacAddress());
+                File.WriteAllText(settingsFullDirectory, saveValue);
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+                Settings = null;
+                FullSettings = null;
+                saveValue = null;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            OnAfterSaveSetting?.Invoke(this, new EventArgs());
         }
 
         #endregion SaveSettings
@@ -169,14 +233,24 @@ namespace MoonbyteSettingsManager
 
         private List<string> LoadSettings()
         {
-            List<string> LoadedSettings = new List<string>();
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeLoadSetting?.Invoke(this, OnBeforeRequest);
 
-            string loadedFileValue = File.ReadAllText(settingsFullDirectory);
-            string decryptedLoadedValue = Decrypt(loadedFileValue, GetClientMacAddress());
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                List<string> LoadedSettings = new List<string>();
 
-            LoadedSettings = decryptedLoadedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                string loadedFileValue = File.ReadAllText(settingsFullDirectory);
+                string decryptedLoadedValue = Decrypt(loadedFileValue, GetClientMacAddress());
 
-            return LoadedSettings;
+                LoadedSettings = decryptedLoadedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                OnAfterLoadSetting?.Invoke(this, new EventArgs());
+                return LoadedSettings;
+            }
+
+            OnAfterLoadSetting?.Invoke(this, new EventArgs());
+            return null;
         }
 
         #endregion LoadSettings
@@ -185,23 +259,30 @@ namespace MoonbyteSettingsManager
 
         private string Encrypt(string encryptString, string EncryptionKey)
         {
-            byte[] clearBytes = Encoding.Unicode.GetBytes(encryptString);
-            using (Aes encryptor = Aes.Create())
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeEncryptMessage?.Invoke(this, OnBeforeRequest);
+
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
             {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
-
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
-
-                using (MemoryStream ms = new MemoryStream())
+                byte[] clearBytes = Encoding.Unicode.GetBytes(encryptString);
+                using (Aes encryptor = Aes.Create())
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
-                    { cs.Write(clearBytes, 0, clearBytes.Length); cs.Close(); }
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
-                    encryptString = Convert.ToBase64String(ms.ToArray());
+                    encryptor.Key = pdb.GetBytes(32);
+                    encryptor.IV = pdb.GetBytes(16);
+
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                        { cs.Write(clearBytes, 0, clearBytes.Length); cs.Close(); }
+
+                        encryptString = Convert.ToBase64String(ms.ToArray());
+                    }
                 }
             }
 
+            OnAfterEncryptMessage?.Invoke(this, new EventArgs());
             return encryptString;
         }
 
@@ -211,24 +292,31 @@ namespace MoonbyteSettingsManager
 
         private string Decrypt(string input, string EncryptionKey)
         {
-            input = input.Replace(" ", "+");
-            byte[] cipherBytes = Convert.FromBase64String(input);
-            using (Aes encryptor = Aes.Create())
+            OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeDecryptMessage?.Invoke(this, OnBeforeRequest);
+
+            if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
             {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
-
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
-
-                using (MemoryStream ms = new MemoryStream())
+                input = input.Replace(" ", "+");
+                byte[] cipherBytes = Convert.FromBase64String(input);
+                using (Aes encryptor = Aes.Create())
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
-                    { cs.Write(cipherBytes, 0, cipherBytes.Length); cs.Close(); }
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
-                    input = Encoding.Unicode.GetString(ms.ToArray());
+                    encryptor.Key = pdb.GetBytes(32);
+                    encryptor.IV = pdb.GetBytes(16);
+
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
+                        { cs.Write(cipherBytes, 0, cipherBytes.Length); cs.Close(); }
+
+                        input = Encoding.Unicode.GetString(ms.ToArray());
+                    }
                 }
             }
 
+            OnAfterDecryptMessage?.Invoke(this, new EventArgs());
             return input;
         }
 

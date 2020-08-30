@@ -45,6 +45,7 @@
     <Compile Include="MSM.cs" />
     <Compile Include="MSMCore.cs" />
     <Compile Include="MSMVault.cs" />
+    <Compile Include="OnBeforeMoonbyteCommandsEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

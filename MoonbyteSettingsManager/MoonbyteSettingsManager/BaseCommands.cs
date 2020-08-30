@@ -6,6 +6,7 @@ namespace MoonbyteSettingsManager
     public class BaseCommands
     {
         private const string Sep = " : ";
+        public enum MoonbyteCancelRequest { Cancel, Continue }
 
         public static void BaseDeleteSetting(string SettingTitle, List<string> Settings)
         {

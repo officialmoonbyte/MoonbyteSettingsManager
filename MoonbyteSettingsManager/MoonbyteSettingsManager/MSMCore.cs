@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -15,6 +16,22 @@ namespace MoonbyteSettingsManager
         private string settingsFileName = null;
 
         #endregion
+
+        #region Events
+
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeEditSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeReadSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeCheckSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeDeleteSetting;
+        public event EventHandler<OnBeforeMoonbyteCommandsEventArgs> OnBeforeSaveSettings;
+
+        public event EventHandler<EventArgs> OnAfterEditSetting;
+        public event EventHandler<EventArgs> OnAfterReadSetting;
+        public event EventHandler<EventArgs> OnAfterCheckSetting;
+        public event EventHandler<EventArgs> OnAfterDeleteSetting;
+        public event EventHandler<EventArgs> OnAfterSaveSettings;
+
+        #endregion Events
 
         #region Properties
 
@@ -73,7 +90,17 @@ namespace MoonbyteSettingsManager
         #region SaveSettings
 
         public void SaveSettings()
-        { File.WriteAllLines(settingsFullDirectory, settings); }
+        {
+            OnBeforeMoonbyteCommandsEventArgs onBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeSaveSettings?.Invoke(this, onBeforeRequest);
+
+            if (onBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            { 
+                File.WriteAllLines(settingsFullDirectory, settings); 
+            }
+
+            OnAfterSaveSettings?.Invoke(this, new EventArgs());
+        }
 
         #endregion SaveSettings
 
@@ -81,8 +108,15 @@ namespace MoonbyteSettingsManager
 
         public void EditSetting(string SettingTitle, string SettingValue)
         {
-            if (CheckValues())
-            { BaseCommands.BaseEditSetting(SettingTitle, SettingValue, settings); }
+            OnBeforeMoonbyteCommandsEventArgs onBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeEditSetting?.Invoke(this, onBeforeRequest);
+
+            if (onBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues()) BaseCommands.BaseEditSetting(SettingTitle, SettingValue, settings); 
+            }
+
+            OnAfterEditSetting?.Invoke(this, new EventArgs());
         }
 
         #endregion EditSetting
@@ -91,9 +125,19 @@ namespace MoonbyteSettingsManager
 
         public string ReadSetting(string SettingTitle)
         {
-            if (CheckValues())
-            { return BaseCommands.BaseReadSetting(SettingTitle, settings); }
+            OnBeforeMoonbyteCommandsEventArgs onBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeReadSetting?.Invoke(this, onBeforeRequest);
 
+            if (onBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues()) 
+                {
+                    OnAfterReadSetting?.Invoke(this, new EventArgs());
+                    return BaseCommands.BaseReadSetting(SettingTitle, settings); 
+                }
+            }
+
+            OnAfterReadSetting?.Invoke(this, new EventArgs());
             return null;
         }
 
@@ -103,8 +147,19 @@ namespace MoonbyteSettingsManager
 
         public bool CheckSetting(string SettingTitle)
         {
-            if (CheckValues())
-            { return BaseCommands.BaseCheckSetting(SettingTitle, settings); }
+            OnBeforeMoonbyteCommandsEventArgs onBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeCheckSetting?.Invoke(this, onBeforeRequest);
+
+            if (onBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues())
+                {
+                    OnAfterReadSetting?.Invoke(this, new EventArgs());
+                    return BaseCommands.BaseCheckSetting(SettingTitle, settings);
+                }
+            }
+
+            OnAfterCheckSetting?.Invoke(this, new EventArgs());
 
             return false;
         }
@@ -115,8 +170,15 @@ namespace MoonbyteSettingsManager
 
         public void DeleteSetting(string SettingTitle)
         {
-            if (CheckValues())
-            { BaseCommands.BaseDeleteSetting(SettingTitle, settings); }
+            OnBeforeMoonbyteCommandsEventArgs onBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
+            OnBeforeDeleteSetting?.Invoke(this, onBeforeRequest);
+
+            if (onBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
+            {
+                if (CheckValues()) BaseCommands.BaseDeleteSetting(SettingTitle, settings); 
+            }
+
+            OnAfterDeleteSetting?.Invoke(this, new EventArgs());
         }
 
         #endregion DeleteSetting
