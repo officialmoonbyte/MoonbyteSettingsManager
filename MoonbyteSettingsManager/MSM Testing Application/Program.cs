@@ -1,5 +1,6 @@
 ﻿using MoonbyteSettingsManager;
 using System;
+using System.IO;
 
 namespace MSM_Testing_Application
 {
@@ -30,7 +31,7 @@ namespace MSM_Testing_Application
 
         public static void VaultMethod()
         {
-            MSMVault msm = new MSMVault();
+            MSMVault msm = new MSMVault(Path.Combine(Environment.CurrentDirectory, "key.pem"));
             msm.SettingsDirectory = Environment.CurrentDirectory;
 
             while (true)

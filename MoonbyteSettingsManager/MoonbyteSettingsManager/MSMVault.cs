@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,6 +13,8 @@ namespace MoonbyteSettingsManager
         #region Vars
 
         private const string Sep = " : ";
+
+        EncryptionKey encryptionKey;
 
         private bool showLog;
         private string settingsDirectory = null;
@@ -66,6 +67,12 @@ namespace MoonbyteSettingsManager
         }
 
         #endregion Properties
+
+        #region Initialization
+
+        public MSMVault(string encryptionKeyFileDirectory) => encryptionKey = new EncryptionKey(encryptionKeyFileDirectory);
+
+        #endregion Initialization
 
         #region Public Methods
 
@@ -196,13 +203,6 @@ namespace MoonbyteSettingsManager
 
         #endregion UpdateDirectory
 
-        #region Get Mac Address
-
-        private string GetClientMacAddress()
-        { return NetworkInterface.GetAllNetworkInterfaces().Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback).Select(nic => nic.GetPhysicalAddress().ToString()).FirstOrDefault(); }
-
-        #endregion Get Mac Address
-
         #region SaveSettings
 
         private void SaveSettings(List<string> Settings)
@@ -213,7 +213,7 @@ namespace MoonbyteSettingsManager
             if (OnBeforeRequest.CancelRequest == BaseCommands.MoonbyteCancelRequest.Continue)
             {
                 string FullSettings = string.Join(Environment.NewLine, Settings);
-                string saveValue = Encrypt(FullSettings, GetClientMacAddress());
+                string saveValue = Encrypt(FullSettings);
                 File.WriteAllText(settingsFullDirectory, saveValue);
 
                 Settings = null;
@@ -241,7 +241,7 @@ namespace MoonbyteSettingsManager
                 List<string> LoadedSettings = new List<string>();
 
                 string loadedFileValue = File.ReadAllText(settingsFullDirectory);
-                string decryptedLoadedValue = Decrypt(loadedFileValue, GetClientMacAddress());
+                string decryptedLoadedValue = Decrypt(loadedFileValue);
 
                 LoadedSettings = decryptedLoadedValue.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -257,7 +257,7 @@ namespace MoonbyteSettingsManager
 
         #region Encrypt
 
-        private string Encrypt(string encryptString, string EncryptionKey)
+        private string Encrypt(string encryptString)
         {
             OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
             OnBeforeEncryptMessage?.Invoke(this, OnBeforeRequest);
@@ -267,7 +267,7 @@ namespace MoonbyteSettingsManager
                 byte[] clearBytes = Encoding.Unicode.GetBytes(encryptString);
                 using (Aes encryptor = Aes.Create())
                 {
-                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(encryptionKey.GetEncryptionKey(), new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
                     encryptor.Key = pdb.GetBytes(32);
                     encryptor.IV = pdb.GetBytes(16);
@@ -290,7 +290,7 @@ namespace MoonbyteSettingsManager
 
         #region Decrypt
 
-        private string Decrypt(string input, string EncryptionKey)
+        private string Decrypt(string input)
         {
             OnBeforeMoonbyteCommandsEventArgs OnBeforeRequest = new OnBeforeMoonbyteCommandsEventArgs() { SettingDirectory = this.SettingsDirectory };
             OnBeforeDecryptMessage?.Invoke(this, OnBeforeRequest);
@@ -301,7 +301,7 @@ namespace MoonbyteSettingsManager
                 byte[] cipherBytes = Convert.FromBase64String(input);
                 using (Aes encryptor = Aes.Create())
                 {
-                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(encryptionKey.GetEncryptionKey(), new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
 
                     encryptor.Key = pdb.GetBytes(32);
                     encryptor.IV = pdb.GetBytes(16);
