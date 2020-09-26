@@ -9,7 +9,6 @@ namespace MoonbyteSettingsManager
         #region Vars
 
         private string _encryptionKeyFileDirectory { get; set; }
-        RSACryptoServiceProvider rsaEncryptionService = new RSACryptoServiceProvider();
 
         #endregion Vars
 
@@ -39,7 +38,9 @@ namespace MoonbyteSettingsManager
 
         #region Public Methods
 
-        public void SaveToFile() => File.WriteAllText(_encryptionKeyFileDirectory, Utility.GeneratePublicKey(rsaEncryptionService));
+        public void SaveToFile() 
+        { if (!File.Exists(_encryptionKeyFileDirectory)) File.WriteAllText(_encryptionKeyFileDirectory, Utility.GeneratePublicKey(Aes.Create())); }
+
         public string GetEncryptionKey() => File.ReadAllText(_encryptionKeyFileDirectory);
 
         #endregion Public Methods

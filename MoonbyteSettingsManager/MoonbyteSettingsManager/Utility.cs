@@ -9,7 +9,13 @@ namespace MoonbyteSettingsManager
 
         #region GenerateKey(int size)
 
-        public static string GeneratePublicKey(RSACryptoServiceProvider rsa) => rsa.ToXmlString(false);
+        public static string GeneratePublicKey(Aes aesEncryption)
+        {
+            aesEncryption.GenerateIV();
+            aesEncryption.GenerateKey();
+
+            return Convert.ToBase64String(aesEncryption.Key);
+        }
 
         public static string GeneratePrivateKey(RSACryptoServiceProvider rsa) => rsa.ToXmlString(true);
 
